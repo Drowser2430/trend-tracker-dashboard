@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,18 +6,33 @@ import matplotlib.pyplot as plt
 df = pd.read_csv("trend_phase_summary.csv")  # Trend phase summary
 raw_data = pd.read_csv("tiktok_trend_tracker_sample.csv")  # Original data
 
-# Add a placeholder 'Category' column if not already present
-if 'Category' not in raw_data.columns:
-    raw_data['Category'] = ['Dance'] * 14 + ['AI'] * 14 + ['Cleaning'] * 14
-
 # App title
 st.title("\U0001F4C8 TikTok Trend Tracker Dashboard")
 st.write("Search for a category to discover trending hashtags, viral hooks, and suggested scripts based on data from previous high-performing videos.")
 
-# Filter by Category
+# Simulated login section
+with st.sidebar:
+    st.header("👤 TikTok Login")
+    username = st.text_input("Enter your TikTok username (simulated login):")
+    if username:
+        st.success(f"Welcome, @{username}!")
+
+# TikTok official content categories
+tiktok_categories = [
+    "Dance", "Comedy / Skits", "Music / Singing / Covers", "Beauty / Makeup / Skincare",
+    "Fashion / Outfits / Styling", "Fitness / Health / Gym", "Food / Recipes / Cooking",
+    "Lifestyle / Vlogs / Routines", "DIY / Crafts", "Education / How-To / Tips",
+    "Tech / AI / Gadgets", "Business / Finance / Side Hustles", "Motivation / Self-Improvement",
+    "Pets / Animals", "Travel / Adventure", "Parenting / Family", "Gaming / Stream Highlights",
+    "Books / Reading / Writing", "Cleaning / Organizing / Hacks", "Storytime / Personal Experience"
+]
+
+# Filter by Category with dropdown and custom input
 st.sidebar.header("🔍 Filter by Category")
-selected_category = st.sidebar.selectbox("Choose a category to explore:", raw_data['Category'].unique())
-category_data = raw_data[raw_data['Category'] == selected_category]
+category_choice = st.sidebar.selectbox("Choose a TikTok category:", options=tiktok_categories)
+custom_category = st.sidebar.text_input("Or enter a custom category:")
+selected_category = custom_category if custom_category else category_choice
+category_data = raw_data[raw_data['Category'].str.contains(selected_category, case=False, na=False)]
 
 # Hashtag Search
 st.subheader("Trend Growth Over Time")
@@ -38,8 +52,19 @@ else:
         subset = category_data[category_data["Hashtag"] == tag]
         st.line_chart(subset.set_index("Date")["Views"])
 
+# Suggestions based on search
+if username and selected_tags.any():
+    st.subheader("🎯 Content Suggestions")
+    st.markdown("**Next TikTok Idea:** Use the selected hashtag(s) in a 15-second video using trending audio in the \"{0}\" category.".format(selected_category))
+    st.markdown("**Suggested Hook:** \"What happens when you try this for 3 days straight?\" 🧠")
+    st.markdown("**Script Starter:** \"I didn't think this would work... but then it went viral. Here's what I did:\" ✨")
+
 # Summary table
 st.subheader("\U0001F4CA Trend Phase Summary")
 st.dataframe(df[df['Hashtag'].isin(category_data['Hashtag'].unique())])
 
 st.caption("Built with Streamlit · Created by Darius Rowser")
+
+
+
+ 
